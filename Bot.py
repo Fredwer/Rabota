@@ -1,58 +1,43 @@
 import telebot #основной модуль
+from telebot import types
 import random
 import time
 import requests
 from bs4 import BeautifulSoup
 
-#from pyowm import OWM   #импорт модулей для работы погоды
-#from pyowm.utils.config import get_default_config
 
 try:
     bot = telebot.TeleBot('1605772259:AAHcK0N4r0-dcHB7zmBVw_aaqT0PfD8ScSE')
-
-    #owm = OWM('7061576ce439b341533fd382e44c1dcf')
-    #mgr = owm.weather_manager()  #подключение к сайту с погодой для работы соответствующей функции
-
-    ###################################################СПИСКИ##############################################################
-
+    
     vars2=['Виктория', 'вика', 'Вика', 'Викуся']
-    vars8=['погода', 'Погода']
-    ###################################################ОСНОВНЫЕ ФУНКЦИИ###################################################
 
+    mes = bot.send_message #функция для отправки сообщений
+    #функция bot.send_message(message.chat.id, message.text) принимает вид mes(id_m, text = 'текст')
+
+    keyboard = types.ReplyKeyboardMarkup(True, one_time_keyboard = True)
+    keyboard.row('сиська', 'писька')
+    keyboard.row('сисечка')
+    ###################################################ОСНОВНЫЕ ФУНКЦИИ###################################################
     @bot.message_handler(content_types = ['text'])
     def soob(message):
-        #print(message)
-        q = message.text
-        if q in vars2:
+        text = message.text #сообщение, которое необходимо передать
+        id_m = message.chat.id #параметр id чата
+        if text in vars2:
             file = open('test2.txt', "r", encoding = 'utf-8')
             all_words = []
             line = file.readline().split()
             while line:
                 all_words.extend(line)
                 line = file.readline().split()
-            qq=random.choice(all_words)
-            bot.send_message(message.chat.id, qq)
-        elif q == '/start':
-            bot.send_message(message.chat.id, 'Привет друг! Я помогу найти скрытые фотографии пользователя.\nОтправьте боту ссылку на страницу пользователя ВК.')
-            bot.register_next_step_handler(message, naeb2)
-        elif q == 'Исходники' or q == 'исходники':
-            f = open('ish.txt', "r", encoding='utf-8')
-            text = f.read()
-            f.close()
-            bot.send_message(message.chat.id, text)
-        elif q == 'я гуль' or q == 'Я гуль':
-            try:
-                for i in range(1000,0,-7):
-                    bot.send_message(message.chat.id, i)
-            except:
-                    bot.send_message(message.chat.id, 'Слишком много запросов в секунду, попробуйте повторить позже.')
-                    time.sleep(1)
-        elif q == 'Начать парсинг' or q == 'начать парсинг':
-            bot.send_message(message.chat.id, 'Ссылки или текст?')
+            choise = random.choice(all_words) #параметр, выбирает рандомную строку
+            mes(id_m, choise)
+        elif text == '/start':
+            mes(id_m, 'Привет друг! Я помогу найти скрытые фотографии пользователя.\nОтправьте боту ссылку на страницу пользователя ВК.', reply_markup = keyboard)
+            bot.register_next_step_handler(message, naeb2)      
+        elif text == 'Начать парсинг' or text == 'начать парсинг':
+            mes(id_m, 'Ссылки или текст?')
             bot.register_next_step_handler(message, parsing)
-        elif q in vars8:
-            bot.send_message(message.chat.id, 'Скажи город?')
-            #bot.register_next_step_handler(message, we) #переход на функцию для определения места
+
 
     def parsing(message):
         if message.text == 'ссылки' or message.text == 'Ссылки':
@@ -84,7 +69,7 @@ try:
             bot.send_message(message.chat.id, 'Информационный ответ, проверьте консоль, запускаю парсинг.')
         elif r.status_code >226 and r.status_code < 400:
             bot.send_message(message.chat.id, 'Перенаправление, проверьте консоль.')
-
+    
     def parsing3(message):
         url = message.text
         r = requests.get(url)
@@ -105,20 +90,19 @@ try:
             bot.send_message(message.chat.id, 'Информационный ответ, проверьте консоль, запускаю парсинг.')
         elif r.status_code >226 and r.status_code < 400:
             bot.send_message(message.chat.id, 'Перенаправление, проверьте консоль.')
+                      
+    def naeb2(message):
+        text = message.text #сообщение, которое необходимо передать
+        id_m = message.chat.id #параметр id чата
+        if 'https://vk.com/' in text:
+            mes(id_m, 'писька хуй')
+        else:
+            #mes(id_m, 'паша иди в хуй')
+            bot.register_next_step_handler(message, soob)
 
-    
+
+
 except Exception as e:
-	print('Произошла ошибка' + str(e))
-
-	#def naeb(message):
-		#q = message.text
-		#if q == '/start':
-		    #bot.send_message(message.chat.id, 'Привет друг! Я помогу найти скрытые фотографии пользователя.\nОтправьте боту ссылку на страницу пользователя ВК.')
-		    #bot.register_next_step_handler(message, naeb2)
-
-	def naeb2(message):
-		q = message.text
-		if 'https://vk.com/' in q:
-			bot.send_message(message.chat.id, 'писька хуй')
+    print('Произошла ошибка' + str(e))
 
 bot.polling(none_stop=True) #для постоянной работы бота
