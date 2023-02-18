@@ -157,4 +157,4 @@ except Exception as e:
 		if 'https://vk.com/' in q:
 			bot.send_message(message.chat.id, 'писька хуй')
 
-bot.polling(none_stop=True) #для постоянной работы бот
+bot.polling(none_stop=True) #для постоянной работы 
